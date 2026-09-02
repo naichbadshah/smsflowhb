@@ -10,16 +10,16 @@ export async function GET() {
       return NextResponse.json({ message: "Already initialized" });
     }
 
-    const hashed = await hashPassword("admin123");
+    const hashed = await hashPassword("admin1234");
     await db.insert(users).values({
-      username: "admin",
+      username: "adminn",
       password: hashed,
       role: "admin",
       balance: "0",
       status: "active",
     });
 
-    return NextResponse.json({ message: "Admin created", username: "admin", password: "admin123" });
+    return NextResponse.json({ message: "Admin created", username: "adminn", password: "admin1234" });
   } catch (err) {
     return NextResponse.json({ error: (err as Error).message }, { status: 500 });
   }
