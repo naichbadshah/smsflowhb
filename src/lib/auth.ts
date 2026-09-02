@@ -78,7 +78,7 @@ export async function requireAdmin(): Promise<SessionUser> {
   return user;
 }
 
-export async function refreshSessionUser(userId: number): Promise<SessionUser> {
+async function fetchUserById(userId: number): Promise<SessionUser | null> {
   const rows = await db
     .select({
       id: users.id,
@@ -88,8 +88,12 @@ export async function refreshSessionUser(userId: number): Promise<SessionUser> {
     })
     .from(users)
     .where(eq(users.id, userId));
-  if (!rows[0]) throw new Error("User not found");
-  const user = rows[0] as SessionUser;
+  return (rows[0] as SessionUser) ?? null;
+}
+
+export async function refreshSessionUser(userId: number): Promise<SessionUser> {
+  const user = await fetchUserById(userId);
+  if (!user) throw new Error("User not found");
   await createSession(user);
   return user;
 }
@@ -97,10 +101,12 @@ export async function refreshSessionUser(userId: number): Promise<SessionUser> {
 export async function getCurrentUser(): Promise<SessionUser | null> {
   const sessionUser = await getSessionUser();
   if (!sessionUser) return null;
+  // Read fresh data without rewriting the session cookie, so this is safe to
+  // call during Server Component render (cookies can only be modified in a
+  // Server Action or Route Handler).
   try {
-    return await refreshSessionUser(sessionUser.id);
+    return await fetchUserById(sessionUser.id);
   } catch {
-    await destroySession();
     return null;
   }
 }
