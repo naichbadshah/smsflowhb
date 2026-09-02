@@ -2,29 +2,22 @@ import { NextResponse } from "next/server";
 import { db } from "@/db";
 import { users, transactions, activations } from "@/db/schema";
 import { requireAdmin } from "@/lib/auth";
-import { sql } from "drizzle-orm";
 
 export async function GET() {
   try {
     await requireAdmin();
 
-    const [userStats] = await db
-      .select({ count: sql<number>`count(*)`, totalBalance: sql<string>`coalesce(sum(${users.balance}), '0')` })
-      .from(users);
-
-    const [transactionStats] = await db
-      .select({ total: sql<string>`coalesce(sum(${transactions.amount}), '0')` })
-      .from(transactions)
-      .where(sql`${transactions.status} = 'completed'`);
-
-    const [activationStats] = await db
-      .select({
-        count: sql<number>`count(*)`,
-        pending: sql<number>`sum(case when ${activations.status} = 'pending' then 1 else 0 end)`,
-        completed: sql<number>`sum(case when ${activations.status} = 'completed' then 1 else 0 end)`,
-        cancelled: sql<number>`sum(case when ${activations.status} = 'cancelled' then 1 else 0 end)`,
-      })
-      .from(activations);
+    const allUsers = await db.select().from(users);
+    const completedTransactions = (await db.select().from(transactions)).filter((row) => row.status === "completed");
+    const allActivations = await db.select().from(activations);
+    const userStats = { count: allUsers.length, totalBalance: allUsers.reduce((sum, row) => sum + Number(row.balance || 0), 0).toFixed(4) };
+    const transactionStats = { total: completedTransactions.reduce((sum, row) => sum + Number(row.amount || 0), 0).toFixed(4) };
+    const activationStats = {
+      count: allActivations.length,
+      pending: allActivations.filter((row) => row.status === "pending").length,
+      completed: allActivations.filter((row) => row.status === "completed").length,
+      cancelled: allActivations.filter((row) => row.status === "cancelled").length,
+    };
 
     return NextResponse.json({
       users: userStats,

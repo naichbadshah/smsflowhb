@@ -1,7 +1,7 @@
 import { SignJWT, jwtVerify } from "jose";
 import { cookies } from "next/headers";
 import bcrypt from "bcryptjs";
-import { eq } from "drizzle-orm";
+import { eq } from "@/db/query";
 import { db } from "@/db";
 import { users } from "@/db/schema";
 

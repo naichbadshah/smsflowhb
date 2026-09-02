@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { eq, like, or, desc, sql } from "drizzle-orm";
+import { eq, like, desc } from "@/db/query";
 import { db } from "@/db";
 import { users } from "@/db/schema";
 import { requireAdmin, hashPassword } from "@/lib/auth";
