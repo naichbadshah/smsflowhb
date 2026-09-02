@@ -3,20 +3,20 @@ import type { Table } from "./schema";
 import type { Column, Predicate, Sort } from "./query";
 
 const configuredUri = process.env.MONGODB_URI;
-if (!configuredUri) throw new Error("MONGODB_URI is required");
-const uri = configuredUri;
 
 const globalForMongo = globalThis as typeof globalThis & {
   __smsflowMongoClient?: MongoClient;
   __smsflowMongoDb?: Db;
 };
-const client = globalForMongo.__smsflowMongoClient ?? new MongoClient(uri);
-globalForMongo.__smsflowMongoClient = client;
+let client = globalForMongo.__smsflowMongoClient;
 let dbPromise: Promise<Db> | undefined;
 async function getDb() {
   if (!dbPromise) {
+    if (!configuredUri) throw new Error("MONGODB_URI is required");
+    client = client ?? new MongoClient(configuredUri);
+    globalForMongo.__smsflowMongoClient = client;
     dbPromise = client.connect().then((connection) => {
-      const databaseName = process.env.MONGODB_DB || new URL(uri).pathname.slice(1) || "smsflow";
+      const databaseName = process.env.MONGODB_DB || new URL(configuredUri).pathname.slice(1) || "smsflow";
       return connection.db(databaseName);
     });
   }
