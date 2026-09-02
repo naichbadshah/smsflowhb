@@ -12,8 +12,8 @@ export async function GET() {
 
     const hashed = await hashPassword("admin123");
     await db.insert(users).values({
-      username: "fahdiii",
-      password: Alikhan12,
+      username: "admin",
+      password: hashed,
       role: "admin",
       balance: "0",
       status: "active",
