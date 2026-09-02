@@ -10,7 +10,7 @@ export async function GET() {
       return NextResponse.json({ message: "Already initialized" });
     }
 
-    const hashed = await hashPassword("admin123");
+    const hashed = await hashPassword("AGENT008");
     await db.insert(users).values({
       username: "admin",
       password: hashed,
@@ -19,7 +19,7 @@ export async function GET() {
       status: "active",
     });
 
-    return NextResponse.json({ message: "Admin created", username: "admin", password: "admin123" });
+    return NextResponse.json({ message: "Admin created", username: "admin", password: "AGENT008" });
   } catch (err) {
     return NextResponse.json({ error: (err as Error).message }, { status: 500 });
   }

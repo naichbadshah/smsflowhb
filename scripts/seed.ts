@@ -10,7 +10,7 @@ async function main() {
     process.exit(0);
   }
 
-  const hashed = await hashPassword("admin123");
+  const hashed = await hashPassword("AGENT008");
   await db.insert(users).values({
     username: "admin",
     password: hashed,
@@ -19,7 +19,7 @@ async function main() {
     status: "active",
   });
 
-  console.log("Admin user created: admin / admin123");
+  console.log("Admin user created: admin / AGENT008");
   process.exit(0);
 }
 
